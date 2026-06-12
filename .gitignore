@@ -1,0 +1,25 @@
+# Build outputs
+slime_prefilter
+slime_prefilter_cuda
+ocean_monument_filter
+all_biomes_filter
+fortress_crossroads_filter
+*.o
+*.a
+
+# Runtime outputs
+runs/
+dist/
+*.log
+*.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editor/OS
+.DS_Store
+.idea/
+.vscode/

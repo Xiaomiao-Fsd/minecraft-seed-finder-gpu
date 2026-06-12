@@ -1,0 +1,84 @@
+{
+  "edition": "java",
+  "target_version": "26.2",
+  "fallback_version": "26.2-pre1",
+  "seed_range": {
+    "start": 0,
+    "count": 1000000
+  },
+  "output": {
+    "directory": "runs/default",
+    "candidates_csv": "candidates_slime.csv",
+    "results_csv": "results.csv",
+    "checkpoint_file": "checkpoint.json"
+  },
+  "prefilter": {
+    "enabled": true,
+    "type": "slime_density",
+    "threshold_chunks": 38,
+    "final_threshold_chunks": 20,
+    "circle_radius_blocks": 128,
+    "search_radius_blocks": 10000,
+    "center_samples": 64,
+    "max_candidates": 0,
+    "use_c_helper": true,
+    "backend": "auto",
+    "cuda": {
+      "batch_size": 1048576,
+      "threads": 256
+    },
+    "note": "粗筛默认 threshold=38，是为了先把候选压到约千分之几；史莱姆圆心限制在原点 10000 格半径内。最终精筛应使用 final_threshold_chunks=20 且更密集/穷举的中心搜索。",
+    "search_region": "circle_from_origin",
+    "center_within_radius_blocks": 10000,
+    "circle_must_fit_inside_radius": false
+  },
+  "checks": {
+    "all_biomes_within_origin_radius": {
+      "enabled": true,
+      "radius_blocks": 10000,
+      "external_checker": {
+        "command": null,
+        "json_arg_style": "stdin"
+      }
+    },
+    "double_ocean_monument": {
+      "enabled": true,
+      "max_distance_blocks": 256,
+      "search_radius_blocks": 10000,
+      "external_checker": {
+        "command": null,
+        "json_arg_style": "stdin"
+      },
+      "both_within_origin_radius_blocks": 10000,
+      "note": "两个海底神殿都必须在原点 10000 格半径内，且彼此距离 <= max_distance_blocks。"
+    },
+    "dense_slime_chunks": {
+      "enabled": true,
+      "min_chunks": 20,
+      "circle_radius_blocks": 128,
+      "search_radius_blocks": 10000,
+      "center_within_radius_blocks": 10000,
+      "circle_must_fit_inside_radius": false
+    },
+    "nether_fortress_adjacent_crossroads": {
+      "enabled": true,
+      "dimension": "nether",
+      "external_checker": {
+        "command": null,
+        "json_arg_style": "stdin"
+      },
+      "search_radius_blocks": 10000,
+      "coordinate_space": "nether_blocks_from_origin",
+      "note": "默认按下界原点 10000 格半径内搜索；如果你想按主世界等效坐标，需要改成 overworld_equivalent_blocks。"
+    }
+  },
+  "pipeline": {
+    "order": [
+      "dense_slime_chunks",
+      "all_biomes_within_origin_radius",
+      "double_ocean_monument",
+      "nether_fortress_adjacent_crossroads"
+    ],
+    "notes": "先跑 cheap slime density，再把候选交给 cubiomes/自定义 C checker 做群系、结构和下界堡垒拼图精筛。"
+  }
+}
