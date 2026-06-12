@@ -42,14 +42,26 @@ __device__ __forceinline__ int java_next_int_dev(uint64_t *seed, int bound) {
     return val;
 }
 
+__device__ __forceinline__ int64_t java_int_to_long_dev(uint32_t value) {
+    return (value & 0x80000000U) ? (int64_t)value - 0x100000000LL : (int64_t)value;
+}
+
+__device__ __forceinline__ uint32_t java_int_mul2_dev(int32_t a, int32_t b) {
+    return (uint32_t)a * (uint32_t)b;
+}
+
+__device__ __forceinline__ uint32_t java_int_mul3_dev(int32_t a, int32_t b, int32_t c) {
+    return ((uint32_t)a * (uint32_t)b) * (uint32_t)c;
+}
+
 __device__ __forceinline__ bool is_slime_chunk_dev(int64_t world_seed, int32_t cx, int32_t cz) {
     uint64_t s = (uint64_t)world_seed;
-    int64_t x = cx;
-    int64_t z = cz;
-    s += (uint64_t)(x * x * 4987142LL);
-    s += (uint64_t)(x * 5947611LL);
-    s += (uint64_t)(z * z * 4392871LL);
-    s += (uint64_t)(z * 389711LL);
+    // Match vanilla Java exactly: several terms are 32-bit int operations
+    // before sign-extension/promotion to long.
+    s += (uint64_t)java_int_to_long_dev(java_int_mul3_dev(cx, cx, 4987142));
+    s += (uint64_t)java_int_to_long_dev(java_int_mul2_dev(cx, 5947611));
+    s += (uint64_t)(java_int_to_long_dev(java_int_mul2_dev(cz, cz)) * 4392871LL);
+    s += (uint64_t)java_int_to_long_dev(java_int_mul2_dev(cz, 389711));
     s ^= 987234911ULL;
     uint64_t rnd = (s ^ JAVA_MULT) & JAVA_MASK;
     return java_next_int_dev(&rnd, 10) == 0;

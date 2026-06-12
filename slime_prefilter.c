@@ -41,14 +41,27 @@ static int java_next_int(uint64_t *seed, int bound) {
     return val;
 }
 
+static int64_t java_int_to_long(uint32_t value) {
+    return (value & 0x80000000U) ? (int64_t)value - 0x100000000LL : (int64_t)value;
+}
+
+static uint32_t java_int_mul2(int32_t a, int32_t b) {
+    return (uint32_t)a * (uint32_t)b;
+}
+
+static uint32_t java_int_mul3(int32_t a, int32_t b, int32_t c) {
+    return ((uint32_t)a * (uint32_t)b) * (uint32_t)c;
+}
+
 static bool is_slime_chunk(int64_t world_seed, int32_t cx, int32_t cz) {
     uint64_t s = (uint64_t)world_seed;
-    int64_t x = cx;
-    int64_t z = cz;
-    s += (uint64_t)(x * x * 4987142LL);
-    s += (uint64_t)(x * 5947611LL);
-    s += (uint64_t)(z * z * 4392871LL);
-    s += (uint64_t)(z * 389711LL);
+    // Match the vanilla Java expression exactly. The x*x*4987142,
+    // x*5947611, z*z and z*389711 sub-expressions are evaluated as
+    // 32-bit Java int operations before being cast/promoted to long.
+    s += (uint64_t)java_int_to_long(java_int_mul3(cx, cx, 4987142));
+    s += (uint64_t)java_int_to_long(java_int_mul2(cx, 5947611));
+    s += (uint64_t)(java_int_to_long(java_int_mul2(cz, cz)) * 4392871LL);
+    s += (uint64_t)java_int_to_long(java_int_mul2(cz, 389711));
     s ^= 987234911ULL;
     uint64_t rnd = (s ^ JAVA_MULT) & JAVA_MASK;
     return java_next_int(&rnd, 10) == 0;

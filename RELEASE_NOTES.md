@@ -1,19 +1,12 @@
-# v0.1.0
+# v0.1.1
 
-首个公开 release。
+修复重要准确性问题。
 
-## 包含内容
+## 修复
 
-- CUDA / CPU 史莱姆区块密集度粗筛器。
-- 一键多 GPU runner：适合 4×V100 单节点。
-- 暂停、恢复、状态查询、chunk checkpoint。
-- Release 打包脚本。
-- 中文 README 使用指引。
+- CPU/CUDA 史莱姆区块公式现在精确模拟 Java 原版里的 32-bit `int` 溢出行为。
+- 该修复使结果与 Chunkbase / Java 原版史莱姆区块判定一致。
 
-## 快速运行
+## 重要提示
 
-```bash
-tar -xzf minecraft-seed-finder-gpu-v0.1.0.tar.gz
-cd minecraft-seed-finder-gpu-v0.1.0
-MC_SEED_BACKEND=cuda MC_SEED_GPUS=0,1,2,3 ./run_seed_cluster.sh 100000000
-```
+如果你使用 v0.1.0 跑过候选，请重新运行史莱姆粗筛；v0.1.0 的史莱姆区块判定可能偏离 Java 原版。
